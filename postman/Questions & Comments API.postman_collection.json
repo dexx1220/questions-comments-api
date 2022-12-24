@@ -70,7 +70,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"user_first_name\": \"Lisa\",\n    \"user_last_name\": \"Simpson\",\n    \"text\": \"Shut up, brain! I've got friends now. I don't need you anymore.\",\n    \"parent_comment_id\": 1\n}",
+					"raw": "{\n    \"user_first_name\": \"Lisa\",\n    \"user_last_name\": \"Simpson\",\n    \"text\": \"Shut up, brain! I've got friends now. I don't need you anymore.\",\n    \"parent_id\": 1\n}",
 					"options": {
 						"raw": {
 							"language": "json"

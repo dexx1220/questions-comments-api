@@ -3,13 +3,10 @@ import { Question } from './entities/question.entity';
 import { Comment } from './entities/comment.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QuestionResponse } from './interfaces/question.interface';
-import {
-  BaseCommentResponse,
-  CommentResponse,
-} from './interfaces/comment.interface';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { QuestionResponse } from './dto/question-response.dto';
+import { CommentResponse } from './dto/comment-response.dto';
 
 @Injectable()
 export class QuestionsService {
@@ -31,20 +28,31 @@ export class QuestionsService {
   ): Promise<CommentResponse> {
     const question = await this.validateAndFindQuestion(questionId);
 
-    const { user_first_name, user_last_name, text, parent_comment_id } = dto;
+    const { user_first_name, user_last_name, text, parent_id } = dto;
 
-    const parentComment = await this.validateAndFindParent(parent_comment_id);
+    const parentComment = await this.validateAndFindParent(parent_id);
 
-    return await this.commentRepository.save({
+    const result = await this.commentRepository.save({
       user_first_name,
       user_last_name,
       text,
       question,
       ...(parentComment ? { parent: parentComment } : {}),
     });
+
+    return {
+      id: result.id,
+      user_first_name,
+      user_last_name,
+      text,
+      question_id: question.id,
+      parent_id,
+      created_at: result.created_at,
+      updated_at: result.updated_at,
+    };
   }
 
-  async getComments(questionId: number): Promise<BaseCommentResponse[]> {
+  async getComments(questionId: number): Promise<CommentResponse[]> {
     await this.validateAndFindQuestion(questionId);
 
     const comments = await this.commentRepository.find({
@@ -57,8 +65,12 @@ export class QuestionsService {
     });
 
     return comments.map((comment) => {
-      const { question, ...result } = comment;
-      return result;
+      const { question, parent, ...result } = comment;
+      return {
+        ...result,
+        question_id: question.id,
+        parent_id: parent?.id,
+      };
     });
   }
 

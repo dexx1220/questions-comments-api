@@ -42,7 +42,7 @@ describe('QuestionsController', () => {
         user_first_name: 'jane',
         user_last_name: 'doe',
         text: 'how is the weather today?',
-        parent_comment_id: 1,
+        parent_id: 1,
       };
       const result = {
         ...dto,

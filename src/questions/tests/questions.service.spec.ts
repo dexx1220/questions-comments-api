@@ -57,20 +57,20 @@ describe('QuestionsService', () => {
 
   describe('createComment', () => {
     it('should save comment using repository', async () => {
-      const mockQuestion = {};
-      const mockParentComment = {};
+      const mockQuestion = { id: 1 };
+      const mockParentComment = { id: 10 };
       const questionId = 1;
       const dto = {
         user_first_name: 'jane',
         user_last_name: 'doe',
         text: 'testing 123',
-        parent_comment_id: 10,
+        parent_id: 10,
       };
       const result = {
         ...dto,
         id: 1,
-        question: mockQuestion,
-        parent: mockParentComment,
+        question_id: mockQuestion.id,
+        parent_id: mockParentComment.id,
       };
 
       (service as any).validateAndFindQuestion = jest
@@ -88,7 +88,7 @@ describe('QuestionsService', () => {
         questionId,
       );
       expect((service as any).validateAndFindParent).toHaveBeenCalledWith(
-        dto.parent_comment_id,
+        dto.parent_id,
       );
       expect(commentRepository.save).toHaveBeenCalledWith({
         user_first_name: dto.user_first_name,
