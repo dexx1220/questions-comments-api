@@ -38,3 +38,6 @@ make remove
 ```
 make remove_image
 ```
+---
+### Swagger & API Documentation
+Once you've built the Docker image and have a running container, visit `localhost:3000/swagger`

@@ -46,6 +46,7 @@ export class QuestionsController {
   @Get('/:id/comments')
   @ApiOkResponse({
     description: 'Comments of a question returned as response',
+    type: [CommentResponse],
   })
   @ApiNotFoundResponse({
     description: 'If question is not found, then 404 returned',
