@@ -7,6 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  DeleteDateColumn,
 } from 'typeorm';
 
 import { Question } from './question.entity';
@@ -41,4 +42,7 @@ export class Comment {
 
   @UpdateDateColumn()
   updated_at: string;
+
+  @DeleteDateColumn()
+  deleted_at: string;
 }

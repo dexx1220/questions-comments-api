@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Param } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param, Delete } from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
@@ -55,5 +55,13 @@ export class QuestionsController {
     @Param('id') questionId: number,
   ): Promise<CommentResponse[]> {
     return await this.questionsService.getComments(questionId);
+  }
+
+  @Delete('/:id/comments/:commentId')
+  async deleteComment(
+    @Param('id') questionId: number,
+    @Param('commentId') commentId: number,
+  ): Promise<void> {
+    return await this.questionsService.deleteComment(questionId, commentId);
   }
 }

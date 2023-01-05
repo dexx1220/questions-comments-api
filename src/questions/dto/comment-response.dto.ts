@@ -47,4 +47,6 @@ export class CommentResponse {
     example: '2022-12-24T18:44:19.000Z',
   })
   updated_at: string;
+
+  children?: CommentResponse[];
 }

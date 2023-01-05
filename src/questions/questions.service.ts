@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Question } from './entities/question.entity';
 import { Comment } from './entities/comment.entity';
 import { Repository } from 'typeorm';
@@ -30,7 +34,10 @@ export class QuestionsService {
 
     const { user_first_name, user_last_name, text, parent_id } = dto;
 
-    const parentComment = await this.validateAndFindParent(parent_id);
+    const parentComment = await this.validateAndFindParent(
+      questionId,
+      parent_id,
+    );
 
     const result = await this.commentRepository.save({
       user_first_name,
@@ -56,7 +63,7 @@ export class QuestionsService {
     await this.validateAndFindQuestion(questionId);
 
     const comments = await this.commentRepository.find({
-      relations: { question: true, parent: true },
+      relations: { question: true, parent: true, children: true },
       where: {
         question: {
           id: questionId,
@@ -64,13 +71,42 @@ export class QuestionsService {
       },
     });
 
-    return comments.map((comment) => {
-      const { question, parent, ...result } = comment;
+    const commentsWithoutParents = comments.filter((c) => !c.parent);
+
+    return commentsWithoutParents.map((c) => {
+      const { question, ...result } = c;
       return {
         ...result,
         question_id: question.id,
-        parent_id: parent?.id,
+        children: this.mapChildren(c),
       };
+    });
+  }
+
+  mapChildren(comment: Comment): CommentResponse[] {
+    if (!comment.children) return [];
+
+    const { question } = comment;
+
+    return comment.children.map((child) => {
+      const { ...childResult } = child;
+      return {
+        ...childResult,
+        question_id: question.id,
+        parent_id: comment?.id,
+        children: this.mapChildren(child),
+      };
+    });
+  }
+
+  async deleteComment(questionId: number, commentId: number): Promise<void> {
+    await this.questionRepository.manager.transaction(async (entityManager) => {
+      await entityManager.update(
+        Comment,
+        { id: commentId },
+        { text: 'Deleted' },
+      );
+      await entityManager.softDelete(Comment, { id: commentId });
     });
   }
 
@@ -87,18 +123,24 @@ export class QuestionsService {
   }
 
   private async validateAndFindParent(
+    questionId: number,
     parentId?: number,
   ): Promise<Comment | undefined> {
     if (!parentId) return;
 
-    const comment = await this.commentRepository.findOneBy({
-      id: parentId,
+    const comment = await this.commentRepository.findOne({
+      where: { id: parentId },
+      relations: { question: true },
     });
 
     if (!comment) {
       throw new NotFoundException(
         `Parent comment with ID: ${parentId} not found.`,
       );
+    }
+
+    if (comment.question.id.toString() !== questionId.toString()) {
+      throw new BadRequestException('Wrong question for comment.');
     }
 
     return comment;
